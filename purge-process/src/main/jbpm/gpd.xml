@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<root-container name="Process audit purge" width="828" height="556">
+  <node name="Start" x="217" y="38" width="140" height="40">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Finished" x="198" y="369" width="177" height="36"/>
+  <node name="Establish time to keep finished process" x="166" y="131" width="246" height="40">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Purge completed processes" x="192" y="254" width="187" height="36">
+    <edge>
+      <label x="29" y="-13"/>
+      <bendpoint w1="116" h1="-41" w2="-118" h2="-37"/>
+    </edge>
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+    <edge>
+      <label x="-65" y="12"/>
+      <bendpoint w1="-91" h1="0" w2="-91" h2="0"/>
+      <bendpoint w1="-122" h1="0" w2="-122" h2="0"/>
+      <bendpoint w1="-121" h1="-44" w2="-121" h2="-44"/>
+      <bendpoint w1="-91" h1="-45" w2="-91" h2="-45"/>
+      <bendpoint w1="-30" h1="-44" w2="-30" h2="-44"/>
+    </edge>
+  </node>
+  <node name="Wait" x="456" y="250" width="132" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+      <bendpoint w1="-125" h1="45" w2="109" h2="41"/>
+    </edge>
+  </node>
+</root-container>

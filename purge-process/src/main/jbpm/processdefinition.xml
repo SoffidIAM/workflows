@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition 
+  xmlns="urn:jbpm.org:jpdl-3.1"
+  name="Process audit purge">
+
+	<swimlane name="iniciador">
+		<assignment expression="previous"></assignment>
+	</swimlane>
+
+
+	<start-state name="Start">
+		<transition name="Start" to="Establish time to keep finished process"></transition>
+   </start-state>
+   <end-state name="Finished"></end-state>
+   <task-node name="Establish time to keep finished process">
+      <task name="Set keep period" swimlane="iniciador">
+			<controller></controller>
+      </task>
+		<transition to="Purge completed processes" name="Start process"></transition>
+   </task-node>
+
+	<node name="Purge completed processes" async="true">
+		<action class="es.caib.bpm.wf.purge.PurgeHandler" async="true"></action>
+		<transition to="Wait" name="wait"></transition>
+		<transition to="Finished" name="End"></transition>
+		<transition to="Purge completed processes" name="continue"></transition>
+	</node>
+
+	<state name="Wait">
+		<timer name="Esperar vint-i-quatre hores" duedate="24 hours">
+			<script>
+				token.signal()
+			</script>
+		</timer>
+		<transition to="Purge completed processes"></transition>
+	</state>
+</process-definition>

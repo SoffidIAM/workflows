@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zkib-model>
+
+	<datanode name="reconcileAccounts">
+		<finder name="account" type="account">
+			<ejb-finder
+				jndi="soffid/ejb/com.soffid.iam.reconcile.service.ReconcileService"
+				method="findAllReconAccounts">
+				<parameter value="${processId}" />
+			</ejb-finder>
+		</finder>
+
+		<finder name="role" type="role">
+			<ejb-finder
+				jndi="soffid/ejb/com.soffid.iam.reconcile.service.ReconcileService"
+				method="findAllReconRole">
+				<parameter value="${processId}" />
+			</ejb-finder>
+		</finder>
+
+		<finder name="assignment" type="assignment">
+			<ejb-finder
+				jndi="soffid/ejb/com.soffid.iam.reconcile.service.ReconcileService"
+				method="findAllReconAssignment">
+				<parameter value="${processId}" />
+			</ejb-finder>
+		</finder>
+
+		<finder name="accountAction" type="accountAction">
+			<script-finder>
+				c = new java.util.LinkedList();
+				c.add(com.soffid.iam.reconcile.common.AccountProposedAction.CREATE_NEW_USER);
+				c.add(com.soffid.iam.reconcile.common.AccountProposedAction.BIND_TO_EXISTING_USER);
+				c.add(com.soffid.iam.reconcile.common.AccountProposedAction.IGNORE);
+				c.add(com.soffid.iam.reconcile.common.AccountProposedAction.SHARED);
+
+				return c;
+			</script-finder>
+		</finder>
+
+		<finder name="action" type="action">
+			<script-finder>
+				actions = new java.util.LinkedList();
+				actions.add(com.soffid.iam.reconcile.common.ProposedAction.LOAD);
+				actions.add(com.soffid.iam.reconcile.common.ProposedAction.IGNORE);
+
+				return actions;
+			</script-finder>
+		</finder>
+
+		<finder name="accountType" type="accountType">
+			<script-finder>
+				import es.caib.seycon.ng.comu.*;
+				list = new java.util.LinkedList();
+				list.add (new String(""));
+				for (l: AccountType.literals())
+				{
+					list.add (l);
+				}
+				
+				return list;
+			</script-finder>
+		</finder>
+
+		<finder name="userType" type="userType">
+			<script-finder>
+				userTypes = new es.caib.seycon.ng.comu.TipusUsuari();
+				userTypes.descripcio = com.soffid.iam.reconcile.Messages
+					.getString("ReconcileProposedAction.SelectUserType");
+				return userTypes;
+			</script-finder>
+
+			<ejb-finder jndi="java:comp/env/ejb/DominiUsuariEJB"
+				method="findAllTipusUsuari">
+			</ejb-finder>
+
+			<new-instance-bean className="es.caib.seycon.ng.comu.TipusUsuari">
+			</new-instance-bean>
+		</finder>
+	</datanode>
+
+	<datanode name="account">
+		<ejb-handler
+			jndi="soffid/ejb/com.soffid.iam.reconcile.service.ReconcileService">
+			<update-method method="updateUser">
+				<parameter value="${instance}" />
+			</update-method>
+		</ejb-handler>
+	</datanode>
+
+	<datanode name="role">
+		<ejb-handler
+			jndi="soffid/ejb/com.soffid.iam.reconcile.service.ReconcileService">
+			<update-method method="updateRole">
+				<parameter value="${instance}" />
+			</update-method>
+		</ejb-handler>
+	</datanode>
+
+	<datanode name="assignment">
+		<ejb-handler
+			jndi="soffid/ejb/com.soffid.iam.reconcile.service.ReconcileService">
+			<update-method method="updateAssignment">
+				<parameter value="${instance}" />
+			</update-method>
+		</ejb-handler>
+	</datanode>
+
+	<datanode name="accountAction">
+		<custom-attribute name="accPropActionLiteral">
+			return
+			com.soffid.iam.reconcile.Messages.getString("ReconcileAccountProposedAction."
+			+ instance.toString());
+		</custom-attribute>
+	</datanode>
+
+	<datanode name="action">
+		<custom-attribute name="actionLiteral">
+			return
+			com.soffid.iam.reconcile.Messages.getString("ReconcileProposedAction."
+			+ instance.toString());
+		</custom-attribute>
+	</datanode>
+
+	<datanode name="accountType">
+		<custom-attribute name="accountTypeLiteral">
+			if (instance.length() == 0)
+				return "";
+			else
+				return org.zkoss.util.resource.Labels.getLabel("accountType."+instance);
+		</custom-attribute>
+		<custom-attribute name="value">
+			if (instance.length() == 0)
+				return null;
+			else
+				return es.caib.seycon.ng.comu.AccountType.fromString(instance);
+		</custom-attribute>
+	</datanode>
+
+	<datanode name="userType"></datanode>
+</zkib-model>

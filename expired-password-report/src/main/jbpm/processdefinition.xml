@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.3"
+	name="Expired password report">
+	<description>
+		Process to obtain report about accounts with manual password policy near to expire.
+	</description>
+
+
+	<start-state name="Start">
+		<transition to="Enter number of days about to expiration"></transition>
+	</start-state>
+
+
+	<task-node name="Enter number of days about to expiration">
+		<description>
+			Show page to require the number of days left to expiration shared passwords.
+		</description>
+		<task name="Set days about to expiration">
+			<assignment pooled-actors="SEU_ADMIN, SEU_ADMINISTRADOR, SOFFID_ADMIN"></assignment>
+		</task>
+		<transition to="Finish" name="Cancel"></transition>
+		<transition to="Obtain shared passwords" name="Schedule"></transition>
+	</task-node>
+
+	<node name="Obtain shared passwords">
+		<action name="Wait obtain shared passwords" class="com.soffid.iam.expirationpassreport.bpm.ObtainPasswordsHandler"></action>
+		<description>
+			Obtain shared password with manual password policy near to be expired.
+		</description>
+		<transition to="Show shared passwords near to expiration." name="Show shared passwords"></transition>
+	</node>
+
+	<task-node name="Show shared passwords near to expiration.">
+		<description>
+			Show page to show the shared passwords near to expiration summary.
+		</description>
+		<task name="Show shared passwords">
+			<assignment pooled-actors="SEU_ADMIN, SEU_ADMINISTRADOR, SOFFID_ADMIN"></assignment>
+		</task>
+		<transition to="Enter number of days about to expiration" name="Retry"></transition>
+		<transition to="Finish" name="End"></transition>
+	</task-node>
+
+	<end-state name="Finish"></end-state>
+</process-definition>

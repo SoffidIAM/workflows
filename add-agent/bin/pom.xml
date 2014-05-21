@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>bpm-template</artifactId>
+    <groupId>es.caib.seycon.ng</groupId>
+    <version>1.0.8</version>
+  </parent>
+  <name>Workflow de solicitud s'accés a un host com administrador</name>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>es.caib.seycon.ng</groupId>
+  <artifactId>acces-host-com-administrador</artifactId>
+  <packaging>jbpm</packaging>
+  <version>1.0.6-SNAPSHOT</version>
+  
+	<scm>
+		<connection>
+			scm:cvs:ext:@cvs.gforge.caib.es:/cvsroot/seycon:bpm-template/acces-host-com-administrador
+		</connection>
+  </scm>
+
+	<dependencies>
+		<dependency>
+			<groupId>es.caib.seycon.ng</groupId>
+			<artifactId>seycon-common</artifactId>
+			<version>3.3.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>es.caib.seycon.ng</groupId>
+			<artifactId>seycon-core</artifactId>
+			<version>3.3.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>es.caib.seycon.ng</groupId>
+			<artifactId>seycon-legacy</artifactId>
+			<version>3.3.5</version>
+			<scope>provided</scope>
+		</dependency>		
+	</dependencies>
+</project>

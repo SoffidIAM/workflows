@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+	<task>
+	    <attribute name="onPrepareTransition">
+	    	if (days.getValue () == null) {
+	    	   throw new es.caib.bpm.toolkit.exception.UserWorkflowException("Ha d'introduir el número de dies");
+	    	}
+	    </attribute>
+		<vbox>
+			<label value="Enter the time to keep finished process (in days)"/>
+			<label value="Once the period has elapsed from process finish, the detailed audit information will be removed" multiline="true"/>
+			<intbox width="10em"
+			 bind="days" id="days"/>
+		</vbox>
+	</task>
+</zk>

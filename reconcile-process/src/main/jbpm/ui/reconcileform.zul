@@ -1,0 +1,70 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul
+		http://www.zkoss.org/2005/zul/zul.xsd">
+
+	<task id="window" width="600px">
+		<attribute name="onPrepareTransition">
+			<![CDATA[
+				lb = self.getFellow("dispatcher");
+				if ((lb.getSelectedItem() == null) ||
+					(lb.getSelectedItem().getValue() == null))
+				{
+					if (!event.data.equals("Cancel"))
+					{
+						com.soffid.iam.reconcile.bpm.ReconcileMessages msg =
+								new com.soffid.iam.reconcile.bpm.ReconcileMessages();
+						throw new es.caib.bpm.toolkit.exception
+							.UserWorkflowException("\n" + msg.get("NoDispatcherMessage"));
+					}
+				}
+			]]>
+		</attribute>
+
+		<datamodel id="model" rootNode="agents" src="bpm/descriptorAgents.xml" />
+
+		<zscript>
+			<![CDATA[
+				model.setVariable("actiu", "S", false);
+				model.refresh();
+				
+				// Load messages handler
+				com.soffid.iam.reconcile.bpm.ReconcileMessages msg =
+					new com.soffid.iam.reconcile.bpm.ReconcileMessages();
+			]]>
+		</zscript>
+
+		<grid fixedLayout="true" sclass="grid sensescroll">
+			<columns visible="false">
+				<column width="180px" label="${msg['headerParameter']}"/>
+				<column label="${msg['headerValue']}"/>
+			</columns>
+
+			<rows>
+				<row>
+					<label value="${msg['headerSelectDispatcher']}"/>
+					<hbox width="100%">
+						<listbox id="dispatcher" mold="select" width="98%"
+							bind="dispatcher" dataPath="/window/model:/agent">
+							<dataitem bind="@codi">
+								<listcell bind="@codi" />
+							</dataitem>
+						</listbox>
+					</hbox>
+				</row>
+
+				<row>
+					<label value="${msg['headerDateTime']}:" />
+
+					<hbox width="100%">
+						<datebox id="taskDate" bind="startDate" width="35%"
+							format="dd/MM/yyyy HH:mm" onCreate="self.value = new Date()">
+						</datebox>
+					</hbox>
+				</row>
+			</rows>
+		</grid>
+	</task>
+</zk>

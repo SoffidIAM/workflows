@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<root-container name="Expired password report" width="828" height="537">
+  <node name="Start" x="21" y="17" width="132" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Enter number of days about to expiration" x="297" y="14" width="240" height="36">
+    <edge>
+      <label x="-24" y="7"/>
+    </edge>
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Obtain shared passwords" x="298" y="109" width="239" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Show shared passwords near to expiration." x="299" y="206" width="236" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+      <bendpoint w1="-181" h1="0" w2="-181" h2="192"/>
+      <bendpoint w1="-181" h1="-142" w2="-181" h2="50"/>
+    </edge>
+    <edge>
+      <label x="9" y="-91"/>
+      <bendpoint w1="321" h1="0" w2="-1" h2="193"/>
+    </edge>
+  </node>
+  <node name="Finish" x="673" y="13" width="132" height="36"/>
+</root-container>

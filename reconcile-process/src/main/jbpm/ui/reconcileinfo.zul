@@ -1,0 +1,1341 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul
+		http://www.zkoss.org/2005/zul/zul.xsd">
+
+	<task id="window" width="${amplaria}" onSave="reconcile.commit()"
+		onPrepareTransition="reconcile.commit()">
+		<attribute name="onLoad">
+			<![CDATA[
+				// Check taken task
+				if ((window.getTask().getStart() == null) &&
+						(window.getTask().getEnd() == null))
+				{
+					rowsAccount = lista.getFellow("gridAccounts").getRows().getChildren();
+					rowsRoles = lista.getFellow("gridRoles").getRows().getChildren();
+					rowsAssign = lista.getFellow("gridAssignment").getRows().getChildren();
+					
+					// Process accounts elements
+					for (int i = 0; i < rowsAccount.size(); i++)
+					{
+						disableAccountElements(rowsAccount.get(i));
+					}
+					
+					// Process role elements
+					for (int i = 0; i < rowsRoles.size(); i++)
+					{
+						disableRoleElements(rowsRoles.get(i));
+					}
+					
+					// Process assignment elements
+					for (int i = 0; i < rowsAssign.size(); i++)
+					{
+						disableAssignmentElements(rowsAssign.get(i));
+					}
+				}
+			]]>
+		</attribute>
+
+		<datamodel id="reconcile" rootNode="reconcileAccounts"
+			src="bpm/descReconcileUser.xml" />
+
+		<zscript>
+			<![CDATA[
+				import es.caib.zkib.datasource.XPathUtils;
+				import es.caib.seycon.ng.comu.*;
+				import com.soffid.iam.reconcile.common.*;
+				
+				numRows = es.caib.seycon.ng.web.Custom.FILERES;
+				
+				processId = new Long(window.getProcessInstance().getId());
+				reconcile.getVariables().declareVariable("processId", processId);
+				
+				// Load messages handler
+				com.soffid.iam.reconcile.bpm.ReconcileMessages msg =
+						new com.soffid.iam.reconcile.bpm.ReconcileMessages();
+				
+				/******************** TABPANEL ACCOUNTS SCRIPTS ***********************/
+				
+				// Update account data after select a existing user or group
+				void updateAccountData (Object[] dades)
+				{
+					Textbox tb = self.getParent().getChildren().get(0);
+					tb.setValue((String) (dades[0]));
+				}
+				
+				// Show users list selector
+				void addExistingUser (Component cmp)
+				{
+					Events.postEvent("onInicia",
+							desktop.getPage("usuarisLlista").getFellow("esquemaLlista"), cmp);
+				}
+				
+				// Show groups list selector
+				void addGroup (Component comp)
+				{
+					desktop.getPage("grupsLlista").setAttribute("tipus", "");
+					desktop.getPage("grupsLlista").setAttribute("llistaObsolets", false);
+					Events.postEvent("onInicia",
+							desktop.getPage("grupsLlista").getFellow("esquemaLlista"), comp);
+				}
+				
+				// Define parameters on account row creation
+				void onNewAccountRow(data)
+				{
+					// Check taken task
+					if ((window.getTask().getStart() == null) &&
+							(window.getTask().getEnd() == null))
+					{
+						disableAccountElements(data);
+					}
+					
+					else
+					{
+						action = data.getChildren().get(4).getChildren().get(0)
+								.getSelectedItem().getValue().getInstance();
+						
+						setAccountElementsVisibility(data, action);
+					}
+				}
+				
+				// Disable all interactive elements in accounts tab
+				void disableAccountElements(data)
+				{
+					// Disable select account checkbox
+					data.getChildren().get(0).getChildren().get(0).setDisabled(true);
+					
+					// Disable proposed action listbox
+					data.getChildren().get(4).getChildren().get(0).setDisabled(true);
+					
+					// Disable user selection elements
+					disableUserSelection(data);
+					
+					// Disable group selection elements
+					data.getChildren().get(6).getChildren().get(0).setDisabled(true);
+					data.getChildren().get(6).getChildren().get(2).setDisabled(true);
+					
+					// Disable account type elements
+					data.getChildren().get(7).getChildren().get(0).setDisabled(true);
+					
+					// Disable account active checkbox
+					data.getChildren().get(8).getChildren().get(0).setDisabled(true);
+				}
+				
+				// Disable existing user selection elements
+				void disableUserSelection(parent)
+				{
+					// Clear user textbox value
+					parent.getChildren().get(5).getChildren().get(0).setReadonly(true);
+					
+					// Disable select existing user button
+					parent.getChildren().get(5).getChildren().get(2).setDisabled(true);
+				}
+				
+				// Enable elements for bind to existing user option
+				void enableBindExistingUserElements(parent)
+				{
+					// Clear user textbox value
+					parent.getChildren().get(5).getChildren().get(0).setReadonly(false);
+					
+					// Enable select existing user button
+					parent.getChildren().get(5).getChildren().get(2).setDisabled(false);
+					
+					// Clear group textbox value
+					parent.getChildren().get(6).getChildren().get(0).setDisabled(true);
+					parent.getChildren().get(6).getChildren().get(0).setValue("");
+					
+					// Disable select primary group button
+					parent.getChildren().get(6).getChildren().get(2).setDisabled(true);
+					
+					// Enable select user type listbox
+					parent.getChildren().get(7).getChildren().get(0).setDisabled(true);
+					
+					// Enable active user checkbox
+					parent.getChildren().get(8).getChildren().get(0).setDisabled(true);
+					
+					// Disable select account privileges listbox
+					parent.getChildren().get(9).getChildren().get(0).setDisabled(true);
+				}
+				
+				// Enable elements for create new user option
+				void enableCreateUserElements(parent)
+				{
+					disableUserSelection(parent);
+					
+					// Enable select primary group
+					parent.getChildren().get(6).getChildren().get(0).setDisabled(false);
+					parent.getChildren().get(6).getChildren().get(2).setDisabled(false);
+					
+					// Enable select user type listbox
+					parent.getChildren().get(7).getChildren().get(0).setDisabled(false);
+					
+					// Enable active user checkbox
+					parent.getChildren().get(8).getChildren().get(0).setDisabled(false);
+					
+					// Disable select account privileges listbox
+					parent.getChildren().get(9).getChildren().get(0).setDisabled(true);
+				}
+				
+				// Enable elements for shared account option
+				void enableSharedAccountElements(parent)
+				{
+					disableUserSelection(parent);
+					
+					selectedType = parent.getChildren().get(9).getChildren().get(0)
+							.getSelectedItem();
+					
+					// Enable/disable select primary group
+					if ((selectedType != null) && (selectedType == AccountType.USER))
+					{
+						parent.getChildren().get(6).getChildren().get(0).setDisabled(false);
+					}
+					
+					else
+					{
+						parent.getChildren().get(6).getChildren().get(0).setDisabled(true);
+					}
+					
+					parent.getChildren().get(6).getChildren().get(2).setDisabled(true);
+					
+					// Enable select user type listbox
+					parent.getChildren().get(7).getChildren().get(0).setDisabled(false);
+					
+					// Enable active user checkbox
+					parent.getChildren().get(8).getChildren().get(0).setDisabled(true);
+					
+					// Enable select account privileges listbox
+					parent.getChildren().get(9).getChildren().get(0).setDisabled(false);
+				}
+				
+				// Disable page elements
+				void disableCommonElements(parent)
+				{
+					disableUserSelection(parent);
+					
+					// Clear group textbox value
+					parent.getChildren().get(6).getChildren().get(0).setDisabled(true);
+					parent.getChildren().get(6).getChildren().get(0).setValue("");
+					
+					// Disable select primary group button
+					parent.getChildren().get(6).getChildren().get(2).setDisabled(true);
+					
+					// Disable select user type listbox
+					parent.getChildren().get(7).getChildren().get(0).setDisabled(true);
+					
+					// Disable active user checkbox
+					parent.getChildren().get(8).getChildren().get(0).setDisabled(true);
+					
+					// Disable select account privileges listbox
+					parent.getChildren().get(9).getChildren().get(0).setDisabled(true);
+				}
+				
+				// Set visibility for accounts tab according selected action
+				void setAccountElementsVisibility(parent, action)
+				{
+					switch(action)
+					{
+						// Check bind existing user option
+						case AccountProposedAction.BIND_TO_EXISTING_USER:
+							
+							enableBindExistingUserElements(parent);
+							break;
+							
+						// Check bind existing user option
+						case AccountProposedAction.CREATE_NEW_USER:
+							
+							enableCreateUserElements(parent);
+							parent.getChildren().get(5).getChildren().get(0).setValue("");
+							
+							break;
+							
+						// Check shared account option
+						case AccountProposedAction.SHARED:
+							
+							enableSharedAccountElements(parent);
+							break;
+							
+						// Check ignore account option
+						case AccountProposedAction.IGNORE:
+							
+							disableCommonElements(parent);
+							break;
+					}
+					
+					modifyAccountInAssignmentTab(parent, action);
+				}
+				
+				// Check modify account row
+				void checkModifyAccount ()
+				{
+					action = self.getSelectedItem().getValue().getInstance();
+					parent = self.getSelectedItem().getParent().getParent().getParent();
+					
+					setAccountElementsVisibility(parent, action);
+				}
+				
+				// Functionality to enable/disable elements when change
+				// the shared account option
+				void checkModifySharedAccount()
+				{
+					accountAction = self.getSelectedItem().getValue();
+					parent = self.getSelectedItem().getParent().getParent().getParent();
+					
+					if (accountAction == AccountType.USER)
+					{
+						// Enable select primary group button
+						parent.getChildren().get(6).getChildren().get(0)
+							.setDisabled(false);
+						parent.getChildren().get(6).getChildren().get(2)
+							.setDisabled(false);
+						
+						// Enable active user checkbox
+						parent.getChildren().get(8).getChildren().get(0)
+							.setDisabled(false);
+					}
+					
+					else
+					{
+						// Enable select primary group button
+						parent.getChildren().get(6).getChildren().get(0).setDisabled(true);
+						parent.getChildren().get(6).getChildren().get(2).setDisabled(true);
+						
+						// Enable active user checkbox
+						parent.getChildren().get(8).getChildren().get(0).setDisabled(false);
+					}
+				}
+				
+				// Functionality to load/ignore action status to account in assignment tab
+				void modifyAccountInAssignmentTab(parent, status)
+				{
+					es.caib.zkib.jxpath.JXPathContext ctx = reconcile.getJXPathContext();
+					es.caib.zkib.binder.BindContext bind = XPathUtils.getComponentContext(parent);
+					String account = XPathUtils.getValue(bind, "@accountName");
+					
+					ctx.getVariables().declareVariable("account", account);
+					Iterator it = ctx.iteratePointers("/assignment[@accountName=$account]");
+					while (it.hasNext())
+					{
+						es.caib.zkib.jxpath.Pointer pointer = it.next();
+						String path = pointer.asPath()+"/@proposedAction";
+						
+						if (status.equals(AccountProposedAction.IGNORE))
+						{
+							ctx.setValue(path, ProposedAction.IGNORE);
+						}
+						
+						else
+						{
+							ctx.setValue(path, ProposedAction.LOAD);
+						}
+						
+						reconcile.sendEvent (new es.caib.zkib.events
+								.XPathValueEvent(reconcile, path));
+					}
+				}
+				
+				// Update role data after select a existing application
+				void updateRoleData (appCodi)
+				{
+					Textbox tb = self.getParent().getChildren().get(0);
+					tb.setValue(appCodi);
+				}
+				
+				// Functionality to select all accounts
+				void selectedAllCheckBox()
+				{
+					parent = self.getParent().getParent().getParent();
+					
+					for (int i = 0; i < parent.getRows().getChildren().size(); i++)
+					{
+						parent.getRows().getChildren().get(i).getChildren().get(0)
+							.getChildren().get(0).setChecked(self.isChecked());
+					}
+				}
+				
+				void openAssignDataAccountsForm()
+				{
+					selectAccountActions.getFellow("accountAction").setSelectedIndex(0);
+					
+					// Disable select existing user elements
+					selectAccountActions.getFellow("userCode").setDisabled(true);
+					selectAccountActions.getFellow("imageSelectUser").setDisabled(true);
+					selectAccountActions.getFellow("userCode").setValue("");
+					
+					// Enable select existing group elements
+					selectAccountActions.getFellow("primaryGroup").setDisabled(false);
+					selectAccountActions.getFellow("imageSelectGroup").setDisabled(false);
+					selectAccountActions.getFellow("primaryGroup").setValue("");
+					
+					// Enable user type elements
+					selectAccountActions.getFellow("lbuserType").setDisabled(false);
+					
+					// Enable active user elements
+					selectAccountActions.getFellow("active").setDisabled(false);
+					selectAccountActions.getFellow("active").setChecked(true);
+					
+					// Disable select account type elements
+					selectAccountActions.getFellow("accountType").setSelectedIndex(0);
+					selectAccountActions.getFellow("accountType").setDisabled(true);
+					
+					selectAccountActions.doModal();
+				}
+				
+				/******************** TABPANEL ROLES SCRIPTS ***********************/
+				
+				// Show applications list selector
+				void addExistingApplication()
+				{
+					Events.postEvent("onInicia",
+						desktop.getPage("aplicacionsLlista").getFellow("esquemaLlista"),
+						self);
+				}
+				
+				// Define parameters on role row creation
+				void onNewRoleRow(data)
+				{
+					// Check taken task
+					if ((window.getTask().getStart() == null) &&
+							(window.getTask().getEnd() == null))
+					{
+						disableRoleElements(data);
+					}
+					
+					else
+					{
+						action = data.getChildren().get(4).getChildren().get(0)
+								.getSelectedItem().getValue().getInstance();
+						
+						setRoleElementsVisibility(data, action);
+					}
+				}
+			
+				// Disable all interactive elements in roles tab
+				void disableRoleElements(data)
+				{
+					// Disable select role checkbox
+					data.getChildren().get(0).getChildren().get(0).setDisabled(true);
+					
+					// Disable proposed action listbox
+					data.getChildren().get(4).getChildren().get(0).setDisabled(true);
+					
+					// Disable application selection
+					data.getChildren().get(5).getChildren().get(0).setDisabled(true);
+					data.getChildren().get(5).getChildren().get(2).setDisabled(true);
+				}
+				
+				// Set visibility for roles tab according selected action
+				void setRoleElementsVisibility(data, roleAction)
+				{
+					switch (roleAction)
+					{
+						case ProposedAction.IGNORE:
+							
+							// Enable select application for role
+							data.getChildren().get(5).getChildren().get(0).setDisabled(true);
+							data.getChildren().get(5).getChildren().get(0).setValue("");
+							
+							data.getChildren().get(5).getChildren().get(2).setDisabled(true);
+							break;
+							
+						case ProposedAction.LOAD:
+							
+							// Disable select application for role
+							data.getChildren().get(5).getChildren().get(0).setDisabled(false);
+							data.getChildren().get(5).getChildren().get(2).setDisabled(false);
+							break;
+					}
+				}
+				
+				// Functionality to enable/disable elements when change the role proposed action
+				void checkModifyRole()
+				{
+					roleAction = self.getSelectedItem().getValue().getInstance();
+					parent = self.getSelectedItem().getParent().getParent().getParent();
+					
+					setRoleElementsVisibility(parent, roleAction);
+				}
+				
+				void openAssignDataRolesForm()
+				{
+					selectRoleActions.getFellow("proposedAction").setSelectedIndex(0);
+					
+					// Enable select action elements
+					selectRoleActions.getFellow("roleApplication").setDisabled(false);
+					selectRoleActions.getFellow("imageAddApp").setDisabled(false);
+					selectRoleActions.getFellow("roleApplication").setValue("");
+					
+					selectRoleActions.doModal();
+				}
+				
+				/******************* TABPANEL ASSIGNMENT SCRIPTS **********************/
+				
+				// Define parameters on role row creation
+				void onNewAssignmentRow(data)
+				{
+					// Check taken task
+					if ((window.getTask().getStart() == null) &&
+							(window.getTask().getEnd() == null))
+					{
+						disableAssignmentElements(data);
+					}
+				}
+				
+				// Disable all interactive elements in assignments tab
+				void disableAssignmentElements(data)
+				{
+					// Disable select role checkbox
+					data.getChildren().get(0).getChildren().get(0).setDisabled(true);
+					
+					// Disable proposed action listbox
+					data.getChildren().get(4).getChildren().get(0).setDisabled(true);
+				}
+				
+				void openAssignDataAssignmentsForm()
+				{
+					selectAssignmentActions.getFellow("proposedAction")
+						.setSelectedIndex(0);
+					
+					selectAssignmentActions.doModal();
+				}
+			]]>
+		</zscript>
+
+		<navegador id="lista">
+
+			<tabbox id="panels">
+				<tabs>
+					<tab label="${msg['tabLabelAccounts']}" />
+					<tab label="${msg['tabLabelRoles']}" />
+					<tab label="${msg['tabLabelAssignment']}" />
+				</tabs>
+
+				<tabpanels>
+
+					<tabpanel id="accounts">
+						<grid id="gridAccounts" mold="paging" pageSize="${numRows}"
+							dataPath="/window/reconcile:/account" height="96%"
+							onNewRow="onNewAccountRow(event.data)">
+
+							<columns>
+								<column>
+									<checkbox id="selectedAllCheckBox" style="font-weight:bold;"
+										label="${msg['columnHeaderSelectAll']}"
+										tooltiptext="${msg['columnHeaderToolSelectAll']}"
+										onCheck="selectedAllCheckBox()"/>
+								</column>
+								<column label="${msg['columnHeaderID']}" width="5%"
+									visible="false" />
+								<column label="${msg['columnHeaderAccName']}" />
+								<column label="${msg['columnHeaderDesc']}" />
+								<column label="${msg['columnPropAction']}" width="11%" />
+								<column label="${msg['columnUserName']}" />
+								<column label="${msg['columnGroup']}" />
+								<column label="${msg['columnType']}" width="11%" />
+								<column label="${msg['columnActive']}" width="5%" />
+								<column label="${msg['columnAccType']}" width="12%" />
+							</columns>
+
+							<datarow>
+								<hbox align="center" pack="center" width="70px">
+									<checkbox id="selectAccount" />
+								</hbox>
+							
+								<hbox>
+									<label bind="@id" id="accountID" />
+								</hbox>
+								
+								<hbox>
+									<label id="accountName" bind="@accountName" />
+								</hbox>
+								
+								<hbox>
+									<label id="accountDescription" bind="@description" />
+								</hbox>
+								
+								<hbox>
+									<listbox id="accountAction" mold="select"
+										bind="@proposedAction" onSelect="checkModifyAccount()"  
+										dataPath="/window/reconcile:/accountAction">
+										<dataitem bind=".">
+											<listcell bind="@accPropActionLiteral" />
+										</dataitem>
+									</listbox>
+								</hbox>
+
+								<hbox>
+									<textbox id="userCode" sclass="textbox" bind="@userCode" />
+									<separator width="5px" />
+									<imageclic src="~/img/user.png" disabled="true" 
+										tooltiptext="Add existing user">
+										<attribute name="onClick">
+											addExistingUser(self);
+										</attribute>
+										<attribute name="onActualitza">
+											updateAccountData(event.data);
+										</attribute>
+									</imageclic>
+								</hbox>
+
+								<hbox>
+									<textbox id="primaryGroup" bind="@primaryGroup"
+										sclass="textbox" />
+									<separator width="5px" />
+									<imageclic src="~./img/grup.gif"
+										tooltiptext="Add existing group">
+										<attribute name="onClick">
+											addGroup(self);
+										</attribute>
+										<attribute name="onActualitza">
+											updateAccountData(event.data);
+										</attribute>
+									</imageclic>
+								</hbox>
+
+								<hbox>
+									<listbox id="lbuserType"
+										dataPath="/window/reconcile:/userType" mold="select"
+										bind="@userType">
+										<attribute name="onSelect">
+											<![CDATA[
+												try
+												{
+													selection = self.getSelectedItem().getValue();
+												}
+											
+												catch (Throwable th)
+												{
+													Missatgebox.info(String.format(
+														org.zkoss.util.resource.Labels
+															.getLabel("usuaris.Error"),
+														new Object[] { th.getMessage() }));
+												}
+											]]>
+										</attribute>
+										<dataitem bind="@codi">
+											<listcell bind="@descripcio" />
+										</dataitem>
+									</listbox>
+								</hbox>
+								
+								<hbox>
+									<checkbox id="active" bind="@active" label="Active"/>
+								</hbox>
+								
+								<hbox>
+									<listbox id="accountType" mold="select" disabled="true"
+										bind="@accountType" onSelect="checkModifySharedAccount()"
+										dataPath="/window/reconcile:/accountType">
+										<dataitem bind="@value">
+											<listcell bind="@accountTypeLiteral" />
+										</dataitem>
+									</listbox>
+								</hbox>
+							</datarow>
+						</grid>
+						
+						<button id="assignSelected" label="${msg['buttonBulkAssign']}"
+							style="margin-top: 5px" onClick="openAssignDataAccountsForm()" />
+					</tabpanel>
+
+					<tabpanel id="roles">
+						<grid id="gridRoles" mold="paging" pageSize="${numRows}"
+							dataPath="/window/reconcile:/role" height="96%"
+							onNewRow="onNewRoleRow(event.data)">
+							<columns>
+								<column>
+									<checkbox id="selectedAllRolesCheckBox"
+										label="${msg['columnHeaderSelectAll']}"
+										style="font-weight:bold;"
+										tooltiptext="${msg['columnHeaderSelectAllRoles']}"
+										onCheck="selectedAllCheckBox()"/>
+								</column>
+								<column label="${msg['columnHeaderRoleID']}" visible="false" />
+								<column label="${msg['columnHeaderRoleName']}" />
+								<column label="${msg['columnHeaderDesc']}" />
+								<column label="${msg['columnPropAction']}" />
+								<column label="${msg['columnApplication']}" />
+							</columns>
+
+							<datarow>
+								<hbox align="center" pack="center" width="70px">
+									<checkbox id="selectRole" />
+								</hbox>
+								
+								<label bind="@id" />
+								<label bind="@roleName" />
+								<label bind="@description" />
+								
+								<hbox>
+									<listbox mold="select" bind="@proposedAction"
+										dataPath="/window/reconcile:/action"
+										onSelect="checkModifyRole()">
+										<dataitem bind=".">
+											<listcell bind="@actionLiteral" />
+										</dataitem>
+									</listbox>
+								</hbox>
+								
+								<hbox>
+									<textbox id="roleApplication" sclass="textbox"
+										bind="@appName" />
+									<separator width="5px" />
+									<imageclic src="~./img/grup.gif"
+										tooltiptext="Add existing application">
+										<attribute name="onClick">
+											addExistingApplication();
+										</attribute>
+										<attribute name="onActualitza">
+											updateRoleData(event.data);
+										</attribute>
+									</imageclic>
+								</hbox>
+							</datarow>
+						</grid>
+						
+						<button id="assignDataSelectedRoles" style="margin-top: 5px"
+							label="${msg['buttonBulkAssignRoles']}"
+							onClick="openAssignDataRolesForm()" />
+					</tabpanel>
+
+					<tabpanel id="assignment">
+						<grid id="gridAssignment" mold="paging" pageSize="${numRows}"
+							dataPath="/window/reconcile:/assignment" height="96%"
+							onNewRow="onNewAssignmentRow(event.data)">
+							<columns>
+								<column>
+									<checkbox id="selectedAllAssignCheckBox"
+										label="${msg['columnHeaderSelectAll']}"
+										style="font-weight:bold;"
+										tooltiptext="${msg['columnHeaderSelectAllAssign']}"
+										onCheck="selectedAllCheckBox()"/>
+								</column>
+								<column label="${msg['columnHeaderAssignID']}" visible="false" />
+								<column label="${msg['columnHeaderAccName']}" />
+								<column label="${msg['columnHeaderRoleName']}" />
+								<column label="${msg['columnPropAction']}" />
+							</columns>
+
+							<datarow>
+								<hbox align="center" pack="center" widths="70,*">
+									<checkbox id="selectAssignment" />
+								</hbox>
+								<label bind="@id" />
+								<label bind="@accountName" />
+								<label bind="@roleName" />
+								
+								<hbox>
+									<listbox mold="select" bind="@proposedAction"
+										dataPath="/window/reconcile:/action">
+										<dataitem bind=".">
+											<listcell bind="@actionLiteral" />
+										</dataitem>
+									</listbox>
+								</hbox>
+							</datarow>
+						</grid>
+					
+						<button id="assignDataSelectedAssignments" style="margin-top: 5px"
+							label="${msg['buttonBulkAssignAssign']}"
+							onClick="openAssignDataAssignmentsForm()" />
+					</tabpanel>
+				</tabpanels>
+			</tabbox>
+		</navegador>
+		
+		<window id="selectAccountActions" closable="true" width="34em"
+			style="border: 5px; border-color: rgb(14,84,98)" 
+			position="center, center" visible="false"
+			title="${msg['winHeaderBulkAssign']}"
+			onClose="onCancelAssignAccountData(); event.stopPropagation();">
+			
+			<zscript>
+				<![CDATA[
+					//Method to assign selected data to selected accounts
+					void assignSelectedData()
+					{
+						int proposedActionIndex = selectAccountActions
+								.getFellow("accountAction").getSelectedIndex();
+						AccountProposedAction proposedAction = selectAccountActions
+								.getFellow("accountAction").getSelectedItem()
+								.getValue().getInstance();
+						String userCode = selectAccountActions
+								.getFellow("userCode").getValue();
+						String group = selectAccountActions
+								.getFellow("primaryGroup").getValue();
+						int userType = selectAccountActions.getFellow("lbuserType")
+								.getSelectedIndex();
+						boolean active = selectAccountActions
+								.getFellow("active").isChecked();
+						int accountTypeIndex = selectAccountActions.getFellow("accountType")
+								.getSelectedIndex();
+						
+						applyProposedActionToSelected(proposedActionIndex, proposedAction,
+								userCode, group, userType, active, accountTypeIndex);
+					}
+					
+					// Functionality to apply the proposed action selected to selected accounts
+					void applyProposedActionToSelected(int propActionIndex,
+							AccountProposedAction propAction, String user,
+							String primaryGroup, int userType, boolean active,
+							int accTypeIndex)
+					{
+						data = window.getFellow("lista").getFellow("panels")
+							.getFellow("accounts").getFellow("gridAccounts");
+						
+						for (int i = 0; i < data.getRows().getChildren().size(); i++)
+						{
+							row = data.getRows().getChildren().get(i);
+							
+							// Check selected account
+							if (row.getChildren().get(0).getChildren().get(0).isChecked())
+							{
+								// Assign proposed action
+								row.getChildren().get(4).getChildren()
+									.get(0).setSelectedIndex(propActionIndex);
+								
+								setAccountElementsVisibility(row, propAction);
+								
+								// Check user code
+								if ((user != null) && (user.length() != 0))
+								{
+									row.getChildren().get(5).getChildren().get(0).setValue(user);
+								}
+								
+								// Check primary group code
+								if ((primaryGroup != null) && (primaryGroup.length() != 0))
+								{
+									row.getChildren().get(6).getChildren().get(0)
+										.setValue(primaryGroup);
+								}
+								
+								// Assign user type
+								row.getChildren().get(7).getChildren()
+									.get(0).setSelectedIndex(userType);
+								
+								// Assign active user
+								row.getChildren().get(8).getChildren()
+									.get(0).setChecked(active);
+								
+								// Assign shared account selected
+								sharedType = row.getChildren().get(9).getChildren().get(0);
+								sharedType.setSelectedIndex(accTypeIndex);
+								
+								if (accTypeIndex != -1)
+									updateSharedAccountElements(sharedType);
+							}
+						}
+						
+						onCancelAssignAccountData();
+					}
+					
+					void updateData (Object[] dades)
+					{
+						Textbox tb = self.getParent().getChildren().get(0);
+						tb.setValue((String) (dades[0]));
+					}
+					
+					void onCancelAssignAccountData()
+					{
+						selectAccountActions.setVisible(false);
+					}
+					
+					// Method to enable/disable user code selection
+					void updateAssignSelectedUserCodeElements(boolean action)
+					{
+						selectAccountActions.getFellow("userCode").setDisabled(action);
+						selectAccountActions.getFellow("imageSelectUser").setDisabled(action);
+						
+						// Clear value
+						if (action)
+							selectAccountActions.getFellow("userCode").setValue("");
+					}
+					
+					// Method to enable/disable primary group selection
+					void updateAssignSelectedGroupElements(boolean action)
+					{
+						selectAccountActions.getFellow("primaryGroup").setDisabled(action);
+						selectAccountActions.getFellow("imageSelectGroup").setDisabled(action);
+						
+						// Clear value
+						if (action)
+							selectAccountActions.getFellow("primaryGroup").setValue("");
+					}
+					
+					// Method to update elements by proposed action selected
+					void updateProposedActionElements(data)
+					{
+						action = data.getSelectedItem().getValue().getInstance();
+						
+						switch(action)
+						{
+							// Check bind existing user option
+							case AccountProposedAction.BIND_TO_EXISTING_USER:
+								
+								// Enable select user to bind elements
+								updateAssignSelectedUserCodeElements(false);
+								
+								// Disable select primary group elements
+								updateAssignSelectedGroupElements(true);
+								
+								// Disable user type elements
+								selectAccountActions.getFellow("lbuserType").setDisabled(true);
+								
+								// Disable active user elements
+								selectAccountActions.getFellow("active").setDisabled(true);
+								
+								// Disable select account type elements
+								selectAccountActions.getFellow("accountType").setDisabled(true);
+								
+								break;
+								
+							// Check bind existing user option
+							case AccountProposedAction.CREATE_NEW_USER:
+								
+								// Enable select user to bind elements
+								updateAssignSelectedUserCodeElements(true);
+								
+								// Disable select primary group elements
+								updateAssignSelectedGroupElements(false);
+								
+								// Disable user type elements
+								selectAccountActions.getFellow("lbuserType").setDisabled(false);
+								
+								// Disable active user elements
+								selectAccountActions.getFellow("active").setDisabled(false);
+								
+								// Disable select account type elements
+								selectAccountActions.getFellow("accountType").setDisabled(true);
+								
+								break;
+								
+							// Check shared account option
+							case AccountProposedAction.SHARED:
+								
+								// Enable select user to bind elements
+								updateAssignSelectedUserCodeElements(true);
+								
+								// Disable select primary group elements
+								updateAssignSelectedGroupElements(true);
+								
+								// Disable user type elements
+								selectAccountActions.getFellow("lbuserType").setDisabled(false);
+								
+								// Disable active user elements
+								selectAccountActions.getFellow("active").setDisabled(true);
+								
+								// Disable select account type elements
+								selectAccountActions.getFellow("accountType").setDisabled(false);
+								
+								break;
+								
+							// Check ignore account option
+							case AccountProposedAction.IGNORE:
+								
+								// Enable select user to bind elements
+								updateAssignSelectedUserCodeElements(true);
+								
+								// Disable select primary group elements
+								updateAssignSelectedGroupElements(true);
+								
+								// Disable user type elements
+								selectAccountActions.getFellow("lbuserType").setDisabled(true);
+								
+								// Disable active user elements
+								selectAccountActions.getFellow("active").setDisabled(true);
+								
+								// Disable select account type elements
+								selectAccountActions.getFellow("accountType").setDisabled(true);
+								break;
+						}
+					}
+					
+					// Method to update elements by shared action selected
+					void updateSharedAccountElements(data)
+					{
+						action = data.getSelectedItem().getValue();
+						
+						if (action == AccountType.USER)
+						{
+							// Enable select user to bind elements
+							updateAssignSelectedUserCodeElements(true);
+							
+							// Disable select primary group elements
+							updateAssignSelectedGroupElements(false);
+							
+							// Disable user type elements
+							selectAccountActions.getFellow("lbuserType").setDisabled(false);
+							
+							// Disable active user elements
+							selectAccountActions.getFellow("active").setDisabled(false);
+						}
+						
+						else
+						{
+							// Enable select user to bind elements
+							updateAssignSelectedUserCodeElements(true);
+							
+							// Disable select primary group elements
+							updateAssignSelectedGroupElements(true);
+							
+							// Disable user type elements
+							selectAccountActions.getFellow("lbuserType").setDisabled(false);
+							
+							// Disable active user elements
+							selectAccountActions.getFellow("active").setDisabled(false);
+						}
+					}
+				]]>
+			</zscript>
+		
+			<vbox width="100%">
+				<grid>
+					<rows>
+						<row>
+							<label value="${msg['columnPropAction']}:" width="90%" />
+							
+							<hbox>
+								<listbox id="accountAction" bind="@proposedAction" mold="select"
+									dataPath="/window/reconcile:/accountAction"
+									onSelect="updateProposedActionElements(self)">
+									<dataitem bind=".">
+										<listcell bind="@accPropActionLiteral" />
+									</dataitem>
+								</listbox>
+							</hbox>
+						</row>
+						
+						<row>
+							<label value="${msg['columnUserName']}:" width="90%"/>
+							
+							<hbox>
+								<textbox id="userCode" bind="@userCode" sclass="textbox"
+									disabled="true" width="*" />
+								<imageclic id="imageSelectUser" src="~/img/user.png"
+									disabled="true" tooltiptext="Add exisitng user">
+									<attribute name="onClick">
+										addExistingUser(self);
+									</attribute>
+									<attribute name="onActualitza">
+										updateData(event.data);
+								</attribute>
+								</imageclic>
+							</hbox>
+						</row>
+						
+						<row>
+							<label value="${msg['primaryGroup']}"/>
+							
+							<hbox>
+								<textbox id="primaryGroup" bind="@primaryGroup"
+									sclass="textbox" />
+								<imageclic id="imageSelectGroup" src="~./img/grup.gif"
+									tooltiptext="Add existing group">
+									<attribute name="onClick">
+										addGroup(self);
+									</attribute>
+									<attribute name="onActualitza">
+										updateData(event.data);
+									</attribute>
+								</imageclic>
+							</hbox>
+						</row>
+						
+						<row>
+							<label value="${msg['columnType']}:"/>
+							
+							<hbox>
+								<listbox id="lbuserType" bind="@userType" mold="select" 
+									dataPath="/window/reconcile:/userType" >
+									<attribute name="onSelect">
+										<![CDATA[
+											try
+											{
+												selection = self.getSelectedItem().getValue();
+											}
+										
+											catch (Throwable th)
+											{
+												Missatgebox.info(String.format(
+													org.zkoss.util.resource.Labels.getLabel("usuaris.Error"),
+													new Object[] { th.getMessage() }));
+											}
+										]]>
+									</attribute>
+									<dataitem bind="@codi">
+										<listcell bind="@descripcio" />
+									</dataitem>
+								</listbox>
+							</hbox>
+						</row>
+						
+						<row>
+							<label value="${msg['columnActive']}:"/>
+							<checkbox id="active" bind="@active"
+								label="Active"/>
+						</row>
+						
+						<row>
+							<label value="${msg['columnAccType']}:"/>
+							
+							<listbox id="accountType" bind="@accountType" mold="select"
+								disabled="true" onSelect="updateSharedAccountElements(self)"
+								dataPath="/window/reconcile:/accountType">
+								<dataitem bind="@value">
+									<listcell bind="@accountTypeLiteral" />
+								</dataitem>
+							</listbox>
+						</row>
+					</rows>
+				</grid>
+				
+				<div align="center">
+					<hbox>
+						<button label="${msg['buttonOK']}">
+							<attribute name="onClick">
+								assignSelectedData();
+							</attribute>
+						</button>
+						<button label="${msg['buttonCancel']}"
+							onClick="onCancelAssignAccountData(); event.stopPropagation();"/>
+					</hbox>
+				</div>
+			</vbox>
+		</window>
+		
+		<window id="selectRoleActions" closable="true" width="34em"
+			position="center, center" visible="false"
+			title="${msg['winHeaderBulkAssign']}"
+			onClose="onCancelAssignRoleData(); event.stopPropagation();">
+			
+			<zscript>
+				<![CDATA[
+					//Method to assign selected data to selected accounts
+					void assignSelectedData()
+					{
+						int proposedActionIndex = selectRoleActions
+								.getFellow("proposedAction").getSelectedIndex();
+						ProposedAction proposedAction = selectRoleActions
+								.getFellow("proposedAction").getSelectedItem()
+								.getValue().getInstance();
+						String appCode = selectRoleActions
+								.getFellow("roleApplication").getValue();
+						
+						applyProposedActionToSelected(proposedActionIndex, proposedAction,
+								appCode);
+					}
+					
+					// Functionality to apply the proposed action selected to selected accounts
+					void applyProposedActionToSelected(int propActionIndex,
+							ProposedAction propAction, String application)
+					{
+						data = window.getFellow("lista").getFellow("panels")
+							.getFellow("accounts").getFellow("gridRoles");
+						
+						for (int i = 0; i < data.getRows().getChildren().size(); i++)
+						{
+							row = data.getRows().getChildren().get(i);
+							
+							// Check selected role
+							if (row.getChildren().get(0).getChildren().get(0).isChecked())
+							{
+								// Assign proposed action
+								row.getChildren().get(4).getChildren()
+									.get(0).setSelectedIndex(propActionIndex);
+								
+								setRoleElementsVisibility(row, propAction);
+								
+								// Check application code
+								if ((application != null) && (application.length() != 0))
+								{
+									row.getChildren().get(5).getChildren()
+										.get(0).setValue(application);
+								}
+							}
+						}
+						
+						onCancelAssignRoleData();
+					}
+					
+					void updateData (Object[] dades)
+					{
+						Textbox tb = self.getParent().getChildren().get(0);
+						tb.setValue((String) (dades[0]));
+					}
+					
+					void onCancelAssignRoleData()
+					{
+						selectRoleActions.setVisible(false);
+					}
+					
+					void updateSelectApp(boolean action)
+					{
+						selectRoleActions.getFellow("roleApplication").setDisabled(action);
+						selectRoleActions.getFellow("imageAddApp").setDisabled(action);
+						
+						if (action)
+							selectRoleActions.getFellow("roleApplication").setValue("");
+					}
+					
+					// Method to update elements by proposed action selected
+					void updateProposedActionElements(data)
+					{
+						action = data.getSelectedItem().getValue().getInstance();
+						
+						switch(action)
+						{
+							case ProposedAction.IGNORE:
+								
+								updateSelectApp(true);
+								
+								break;
+								
+							case ProposedAction.LOAD:
+								
+								updateSelectApp(false);
+								
+								break;
+						}
+					}
+				]]>
+			</zscript>
+		
+			<vbox width="100%">
+				<grid>
+					<rows>
+						<row>
+							<label value="${msg['columnPropAction']}:" width="90%" />
+							
+							<hbox>
+								<listbox id="proposedAction" bind="@proposedAction"
+										mold="select" onSelect="updateProposedActionElements(self)"
+										dataPath="/window/reconcile:/action">
+										<dataitem bind=".">
+											<listcell bind="@actionLiteral" />
+										</dataitem>
+									</listbox>
+							</hbox>
+						</row>
+						
+						<row>
+							<label value="${msg['columnApplication']}:" width="90%"/>
+							
+							<hbox>
+								<textbox id="roleApplication" bind="@appName" sclass="textbox"/>
+									<separator width="5px" />
+									<imageclic id="imageAddApp" src="~./img/grup.gif"
+										tooltiptext="Add existing application">
+										<attribute name="onClick">
+											addExistingApplication();
+										</attribute>
+										<attribute name="onActualitza">
+											updateRoleData(event.data);
+										</attribute>
+									</imageclic>
+							</hbox>
+						</row>
+					</rows>
+				</grid>
+				
+				<div align="center">
+					<hbox>
+						<button label="${msg['buttonOK']}">
+							<attribute name="onClick">
+								assignSelectedData();
+							</attribute>
+						</button>
+						<button label="${msg['buttonCancel']}"
+							onClick="onCancelAssignRoleData(); event.stopPropagation();"/>
+					</hbox>
+				</div>
+			</vbox>
+		</window>
+		
+		<window id="selectAssignmentActions" closable="true" width="34em"
+			position="center, center" visible="false"
+			title="${msg['winHeaderBulkAssign']}"
+			onClose="onCancelAssignAssignmentData(); event.stopPropagation();">
+			
+			<zscript>
+				<![CDATA[
+					//Method to assign selected data to selected accounts
+					void assignSelectedData()
+					{
+						int proposedActionIndex = selectRoleActions
+								.getFellow("proposedAction").getSelectedIndex();
+						ProposedAction proposedAction = selectRoleActions
+								.getFellow("proposedAction").getSelectedItem()
+								.getValue().getInstance();
+						
+						applyProposedActionToSelected(proposedActionIndex, proposedAction);
+					}
+					
+					// Functionality to apply the proposed action selected to selected accounts
+					void applyProposedActionToSelected(int propActionIndex,
+							ProposedAction propAction)
+					{
+						data = window.getFellow("lista").getFellow("panels")
+							.getFellow("accounts").getFellow("gridAssignment");
+						
+						for (int i = 0; i < data.getRows().getChildren().size(); i++)
+						{
+							row = data.getRows().getChildren().get(i);
+							
+							// Check selected assignment
+							if (row.getChildren().get(0).getChildren().get(0).isChecked())
+							{
+								// Assign proposed action
+								row.getChildren().get(4).getChildren()
+									.get(0).setSelectedIndex(propActionIndex);
+							}
+						}
+						
+						onCancelAssignAssignmentData();
+					}
+					
+					void onCancelAssignAssignmentData()
+					{
+						selectAssignmentActions.setVisible(false);
+					}
+				]]>
+			</zscript>
+		
+			<vbox width="100%">
+				<grid>
+					<rows>
+						<row>
+							<label value="${msg['columnPropAction']}:" width="90%" />
+							
+							<hbox>
+								<listbox id="proposedAction" bind="@proposedAction"
+										mold="select" dataPath="/window/reconcile:/action">
+										<dataitem bind=".">
+											<listcell bind="@actionLiteral" />
+										</dataitem>
+									</listbox>
+							</hbox>
+						</row>
+					</rows>
+				</grid>
+				
+				<div align="center">
+					<hbox>
+						<button label="${msg['buttonOK']}">
+							<attribute name="onClick">
+								assignSelectedData();
+							</attribute>
+						</button>
+						<button label="${msg['buttonCancel']}"
+							onClick="onCancelAssignAssignmentData(); event.stopPropagation();"/>
+					</hbox>
+				</div>
+			</vbox>
+		</window>
+	</task>
+
+	<include src="rolsllista.zul" />
+	<include src="usuarisllista.zul" />
+	<include src="grupsllista.zul" />
+	<include src="aplicacionsllista.zul" />
+</zk>

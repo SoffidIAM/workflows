@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.3"
+	name="Reconcile process">
+	<description>
+		Process to execute reconcile tasks.
+	</description>
+
+
+	<start-state name="Start">
+		<transition to="Enter reconcile parameters"></transition>
+	</start-state>
+
+
+	<task-node name="Enter reconcile parameters">
+		<description>
+			Show page to require the reconcile parameters needed for
+			execute the reconcile process.
+
+			Reconcile parameters:
+			- Dispatcher to execute tasks.
+			- Date/time to execute reconcile process.
+		</description>
+		<task name="Reconcile parameters request">
+			<assignment pooled-actors="SEU_ADMIN, SEU_ADMINISTRADOR, SOFFID_ADMIN"></assignment>
+		</task>
+		<transition to="Cancelled" name="Cancel"></transition>
+		<transition to="Wait for scheduled time" name="Schedule"></transition>
+	</task-node>
+
+	<node name="Wait for scheduled time">
+		<action name="Wait scheduled daye/time" class="com.soffid.iam.reconcile.bpm.WaitScheduledHandler"></action>
+		<description>
+			Creates a timer to wait the taks execution date/time.
+		</description>
+		<transition to="Create reconcile task" name="Create task"></transition>
+	</node>
+
+	<node name="Create reconcile task">
+		<action class="com.soffid.iam.reconcile.bpm.ExecutionHandler" name="Create reconcile task"></action>
+		<description>
+			Creates tasks to execute the reconcile process.
+		</description>
+		<event type="task-create">
+			<action name="Create reconcile task" class="com.soffid.iam.reconcile.bpm.ExecutionHandler"></action>
+		</event>
+		<transition to="Waiting for task completion"></transition>
+	</node>
+
+	<state name="Waiting for task completion">
+		<description>
+			Wait until all other tasks are ended.
+		</description>
+		<transition to="Do reconcile"></transition>
+	</state>
+
+	<task-node name="Do reconcile">
+		<description>
+			Show page to show the reconcile data.
+
+		</description>
+		<task name="Show reconcile data">
+			<assignment pooled-actors="SEU_ADMIN, SEU_ADMINISTRADOR, SOFFID_ADMIN"></assignment>
+		</task>
+		<transition to="Cancelled" name="Cancel"></transition>
+		<transition to="Reconcile data" name="Execute"></transition>
+	</task-node>
+
+	<task-node name="Reconcile process summary">
+		<task name="Reconcile process summary">
+			<assignment actor-id="SEU_ADMIN, SEU_ADMINISTRADOR, SOFFID_ADMIN"></assignment>
+		</task>
+		<transition to="ReconcileFinished" name="End"></transition>
+	</task-node>
+
+	<node name="Reconcile data">
+		<action name="Store reconcile information" class="com.soffid.iam.reconcile.bpm.ReconcileData"></action>
+		<description>
+			Make effective the reconcile data.
+		</description>
+		<transition to="Reconcile process summary"></transition>
+	</node>
+
+	<end-state name="ReconcileFinished"></end-state>
+
+	<end-state name="Cancelled"></end-state>
+</process-definition>

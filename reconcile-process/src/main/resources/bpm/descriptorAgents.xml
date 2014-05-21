@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zkib-model>
+	<datanode name="agents">
+		<finder name="agent" type="agent">
+			<script-finder>
+				x = new es.caib.seycon.ng.comu.Dispatcher();
+				x.codi = "- Select one -";
+				
+				return x;
+			</script-finder>
+			<ejb-finder jndi="java:comp/env/ejb/DispatcherEJB" method="findDispatchersByFiltre"
+				if="${queryEnabled}">
+				<parameter value="${codi}" />
+				<parameter value="${nom}" />
+				<parameter value="${url}" />
+				<parameter value="${basatRols}" />
+				<parameter value="${segur}" />
+				<parameter value="${actiu}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+	
+	<datanode name="agent"/>
+</zkib-model>

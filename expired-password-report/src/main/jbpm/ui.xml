@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process>
+	<tag>${pom.version}</tag>
+	<roles>
+		<initiator>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</initiator>
+
+		<supervisor>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</supervisor>
+
+		<observer>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</observer>
+	</roles>
+
+	<task name="Set days about to expiration">
+		<file path="ui/sharedPassMngform.zul" />
+	</task>
+
+	<task name="Show shared passwords">
+		<file path="ui/sharedPassInfoLog.zul" />
+	</task>
+
+	<upgrade>
+		<process>
+			<tag>1.0.0-beta</tag>
+		</process>
+
+		<process>
+			<tag>1.0.0</tag>
+		</process>
+
+		<process>
+			<tag>${project.version}</tag>
+		</process>
+	</upgrade>
+</process>

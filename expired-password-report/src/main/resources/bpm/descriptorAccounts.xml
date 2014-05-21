@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zkib-model>
+	<datanode name="accounts">
+		<finder name="accountType" type="accountType">
+			<script-finder>
+				import es.caib.seycon.ng.comu.*;
+				list = new java.util.LinkedList();
+				for (l: AccountType.literals())
+				{
+					list.add (l);
+				}
+				
+				return list;
+			</script-finder>
+		</finder>
+		
+		<finder name="userType" type="userType">
+			<ejb-finder jndi="java:comp/env/ejb/DominiUsuariEJB"
+				method="findAllTipusUsuari">
+			</ejb-finder>
+
+			<new-instance-bean className="es.caib.seycon.ng.comu.TipusUsuari">
+			</new-instance-bean>
+		</finder>
+	</datanode>
+	
+	<datanode name="accountType">
+		<custom-attribute name="accountTypeLiteral">
+			if (instance.length() == 0)
+				return "";
+			else
+				return org.zkoss.util.resource.Labels.getLabel("accountType."+instance);
+		</custom-attribute>
+		<custom-attribute name="value">
+			if (instance.length() == 0)
+				return null;
+			else
+				return es.caib.seycon.ng.comu.AccountType.fromString(instance);
+		</custom-attribute>
+	</datanode>
+
+	<datanode name="userType" />
+</zkib-model>

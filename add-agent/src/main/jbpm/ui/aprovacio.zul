@@ -1,0 +1,74 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+	<task id="window" width="600px">
+		<attribute name="onPrepareTransition">
+			item = lb.selectedItem;
+			if (item == null || item.value.length() == 0) {
+				throw new es.caib.bpm.toolkit.exception.UserWorkflowException("Request must be approved or denied");
+			}
+		</attribute>
+		<grid fixedLayout="true" sclass="grid sensescroll">
+			<columns visible="false">
+				<column width="180px">Titulo</column>
+				<column>Titulo2</column>
+			</columns>
+			<rows>
+				<row>
+					<label value="User" />
+					<hbox width="100%">
+						<textbox width="98%"
+							readonly="true" bind="/user" />
+					</hbox>
+				</row>
+				<row>
+					<label value="Name" />
+					<hbox width="100%">
+						<textbox width="98%"
+							readonly="true" bind="name" />
+					</hbox>
+				</row>
+				<row>
+					<label value="Surname" />
+					<hbox width="100%">
+						<textbox width="98%"
+							readonly="true" bind="/surname" />
+					</hbox>
+				</row>
+				<row>
+					<label value="Server name" />
+					<hbox width="100%">
+						<textbox width="98%"
+							bind="/hostname" readonly="true" />
+					</hbox>
+				</row>
+				<row>
+					<label value="Server address" />
+					<hbox width="100%">
+						<textbox width="98%"
+							bind="/remoteAddress" readonly="true" />
+					</hbox>
+				</row>
+				<row>
+					<label value="Approve" />
+					<hbox width="100%">
+						<listbox id="lb" width="98%" mold="select" bind="/approve">
+							<listitem value="">
+								<listcell label="Select an action to do"/>
+							</listitem>
+							<listitem value="yes">
+								<listcell label="Approve"/>
+							</listitem>
+							<listitem value="no">
+								<listcell label="Reject"/>
+							</listitem>
+						</listbox>
+					</hbox>
+				</row>
+
+			</rows>
+		</grid>
+	</task>
+</zk>

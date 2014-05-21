@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<root-container name="Get logs from server" width="828" height="556">
+  <node name="Start" x="162" y="78" width="140" height="40">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Finished" x="171" y="406" width="132" height="36"/>
+  <node name="Review log file" x="154" y="262" width="162" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+      <bendpoint w1="176" h1="-66" w2="192" h2="58"/>
+    </edge>
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Get logs" x="168" y="170" width="132" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+</root-container>

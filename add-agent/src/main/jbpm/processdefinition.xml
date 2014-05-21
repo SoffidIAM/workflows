@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.3"
+	name="Soffid agent enrollment">
+	<description>Process for add agents to network management</description>
+
+
+	<start-state name="Start">
+		<transition to="Approval"></transition>
+	</start-state>
+
+
+	<task-node name="Approval">
+		<task name="New sync server request">
+			<assignment pooled-actors="SEU_ADMIN, SEU_ADMINISTRADOR, SOFFID_ADMIN"></assignment>
+		</task>
+		<transition to="Notify" name="End"></transition>
+	</task-node>
+
+	<state name="Notify">
+		<transition to="Approved"></transition>
+		<transition to="Cancelled" name="Cancel"></transition>
+	</state>
+
+	<end-state name="Approved"></end-state>
+
+	<end-state name="Cancelled"></end-state>
+</process-definition>

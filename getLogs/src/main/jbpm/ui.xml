@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process>
+	<tag>${project.version}</tag>
+	<roles>
+		<initiator>
+			<user name="SEU_ADMIN"/>
+			<user name="SOFFID_ADMIN" />
+		</initiator>
+		<supervisor>
+			<user name="SEU_ADMIN"/>
+			<user name="SOFFID_ADMIN" />
+		</supervisor>
+		<observer>
+			<user name="SEU_ADMIN"/>
+			<user name="SOFFID_ADMIN" />
+		</observer>
+	</roles>
+	<task name="Review log file">
+		<file path="ui/revisarLogs.zul"></file>
+	</task>
+	<upgrade>
+		<process>
+			<tag>${project.version}</tag>
+		</process>
+	</upgrade>
+</process>

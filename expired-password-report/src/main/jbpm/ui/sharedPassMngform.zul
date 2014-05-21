@@ -1,0 +1,109 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul
+		http://www.zkoss.org/2005/zul/zul.xsd">
+		
+	<zscript>
+		<![CDATA[
+			void prepareTransition()
+			{
+				days = self.getFellow("txtboxDaysRemaining"); 
+				accountType = self.getFellow("listAccountType");
+				userType = self.getFellow("listUserType");
+				
+				checkParameters(days, accountType, userType);
+				
+				Collection accounts = new LinkedList();
+				Collection userTypes = new LinkedList();
+				for (Listitem item : accountType.getSelectedItems())
+				{
+					accounts.add(item.getValue());
+				}
+				
+				for (Listitem item : userType.getSelectedItems())
+				{
+					userTypes.add(item.getValue());
+				}
+				
+				tasks = window.getTask().getVariables();
+				tasks.put("accountsTypes", accounts);
+				tasks.put("userTypes", userTypes);
+			}
+			
+			// Check parameters
+			void checkParameters(days, accountType, userType)
+			{
+				// Check event
+				if (!event.data.equals("Cancel"))
+				{
+					// Check number of days left to expire passwords
+					if (days.getValue().isEmpty())
+					{
+						throw new es.caib.bpm.toolkit.exception
+							.UserWorkflowException("\nPlease, set the number of days left to expire");
+					}
+					
+					// Check account type
+					if ((accountType.getSelectedItem() == null) ||
+						(accountType.getSelectedItem().getValue() == null))
+					{
+						throw new es.caib.bpm.toolkit.exception
+							.UserWorkflowException("\nPlease, select account type to search");
+					}
+					
+					// Check user type
+					if ((userType.getSelectedItem() == null) ||
+						(userType.getSelectedItem().getValue() == null))
+					{
+						throw new es.caib.bpm.toolkit.exception
+							.UserWorkflowException("\nPlease, select user type to search");
+					}
+				}
+			}
+		]]>
+	</zscript>
+
+	<task id="window" width="600px">
+		<attribute name="onPrepareTransition">
+			<![CDATA[
+				prepareTransition();
+			]]>
+		</attribute>
+
+		<datamodel id="model" rootNode="accounts" src="bpm/descriptorAccounts.xml" />
+
+		<grid fixedLayout="true" sclass="grid sensescroll">
+			<columns>
+				<column label="Days remaining" />
+				<column label="Account type"/>
+				<column label="User type"/>
+			</columns>
+
+			<rows>
+				<row>
+					<textbox id="txtboxDaysRemaining" focus="true" bind="daysRemaining" />
+					
+					<hbox width="100%">
+						<listbox id="listAccountType" checkmark="true" multiple="true"
+							dataPath="/window/model:/accountType">
+							<dataitem bind="@value">
+								<listcell bind="@accountTypeLiteral" />
+							</dataitem>
+						</listbox>
+					</hbox>
+					
+					<hbox width="100%">
+						<listbox id="listUserType" checkmark="true" multiple="true"
+							dataPath="/window/model:/userType">
+							<dataitem bind="@codi">
+								<listcell bind="@descripcio" />
+							</dataitem>
+						</listbox>
+					</hbox>
+				</row>
+			</rows>
+		</grid>
+	</task>
+</zk>

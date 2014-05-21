@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process>
+	<tag>${pom.version}</tag>
+	<roles>
+		<initiator>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</initiator>
+
+		<supervisor>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</supervisor>
+
+		<observer>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</observer>
+	</roles>
+
+	<task name="Reconcile parameters request">
+		<file path="ui/reconcileform.zul" />
+	</task>
+
+	<task name="Reconcile process summary">
+<!-- 		<file path="ui/reconcilefinish.zul" /> -->
+			<file path="ui/reconcileInfoLog.zul" />
+	</task>
+	
+	<task name="Show reconcile data">
+	<file path="ui/reconcileinfo.zul"/>
+	</task>
+
+	<upgrade>
+		<process>
+			<tag>1.0.0-beta</tag>
+		</process>
+
+		<process>
+			<tag>1.0.0</tag>
+		</process>
+
+		<process>
+			<tag>${project.version}</tag>
+		</process>
+	</upgrade>
+</process>

@@ -1,0 +1,65 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+	<task id="window" width="600px"
+		use="es.caib.seycon.bpm.acceshost.ui.AprovaSolicitudWindow">
+		<grid fixedLayout="true" sclass="grid sensescroll">
+			<columns visible="false">
+				<column width="180px">Titulo</column>
+				<column>Titulo2</column>
+			</columns>
+			<rows>
+				<row>
+					<label value="Nom del host" />
+					<hbox width="100%">
+						<textbox id="txtNomHost" width="98%"
+							readonly="true" bind="/nomHostSolicitudAcces" />
+					</hbox>
+				</row>
+				<row>
+					<label value="Codi d'usuari sol·licitant" />
+					<hbox width="100%">
+						<textbox id="txtUsuariSolicitant" width="98%"
+							bind="/usuariPeticionari" readonly="true" />
+					</hbox>
+				</row>
+				<row>
+					<label value="Nom de l'usuari" />
+					<hbox width="100%">
+						<textbox id="txtNomUsuari" width="98%"
+							readonly="true" />
+					</hbox>
+				</row>
+				<row>
+					<label value="Correu de l'usuari" />
+					<hbox width="100%">
+						<textbox id="txtCorreuUsuari" width="98%"
+							bind="/correuUsuariPeticionari" readonly="true" />
+					</hbox>
+				</row>
+				<row>
+					<label value="Motiu" />
+					<textbox id="txtMotiu" width="95%"
+						bind="/motiuSolicitudAcces" readonly="true" multiline="true"
+						rows="5" />
+				</row>
+
+			</rows>
+		</grid>
+		<separator height="5px" />
+		<grid sclass="grid sensescroll" fixedLayout="true">
+			<rows>
+				<row>
+					<label
+						value="Data de fi de l'autorització d'accés com a administrador" />
+					<hbox width="100%">
+						<datebox id="dataFiAutoritzacio" />
+					</hbox>
+				</row>
+			</rows>
+
+		</grid>
+	</task>
+</zk>

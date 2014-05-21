@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:maven="http://maven.apache.org/POM/4.0.0">
+  <parent>
+    <artifactId>bpm-template</artifactId>
+    <groupId>com.soffid.iam.bpm</groupId>
+    <version>1.0.1</version>
+  </parent>
+  <name>Purgat de processos antics</name>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>purge-process</artifactId>
+  <packaging>jbpm</packaging>
+  <version>1.0.2</version>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>soffid-open</id>
+      <url>http://www.soffid.com/maven</url>
+    </pluginRepository>
+  </pluginRepositories>
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>http://repo1.maven.org/maven2</url>
+    </repository>
+    <repository>
+      <id>soffid-open</id>
+      <url>http://www.soffid.com/maven</url>
+    </repository>
+    <repository>
+      <id>jboss</id>
+      <url>https://repository.jboss.org/nexus/content/repositories/releases</url>
+    </repository>
+  </repositories>
+  <distributionManagement>
+    <repository>
+      <uniqueVersion>true</uniqueVersion>
+      <id>soffid-open</id>
+      <name>Soffid Maven repository</name>
+      <url>${soffid.deploy.url}</url>
+    </repository>
+    <site>
+      <id>soffid-open</id>
+      <name>Soffid Maven site repository</name>
+      <url>${soffid.deploy.site.url}</url>
+    </site>
+  </distributionManagement>
+</project>

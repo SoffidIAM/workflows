@@ -1,0 +1,43 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+	<task id="window" width="600px"
+		use="es.caib.seycon.bpm.acceshost.ui.OmplirSolicitudWindow">
+		<grid sclass="grid sensescroll" fixedLayout="true" >
+			<columns visible="false">
+				<column width="100px">Titol</column>
+				<column width="*">Contingut</column>
+			</columns>
+			<rows>
+				<row>
+					<label value="Nom del host " />
+					<hbox width="100%">
+						<hbox width="95%" widths="*,18px" align="end">
+							<textbox id="txtNomHost" width="100%"
+								onChange="window.buscar(self.value,null,true)"
+								bind ="/nomHostSolicitudAcces" />
+							<image align="right" width="18px"
+								src="~./img/fletxa_cerca_trans.gif"
+								onClick="window.buscar(txtNomHost.value,null,true)" />
+						</hbox>
+					</hbox>
+				</row>
+				<row>
+					<label value="IP" />
+					<textbox id="txtIPHost" width="95%" readonly="true" bind="/ipHostSolicitudAcces" />
+
+				</row>
+				<row>
+					<label value="Xarxa" />
+					<textbox id="txtXarxaHost" width="95%" readonly="true" bind="/xarxaHostSolicitudAcces"/>
+				</row>
+				<row>	
+					<label value="Motiu" />
+					<textbox id="txtMotiu" width="95%" bind="/motiuSolicitudAcces" multiline="true" rows="5"/>
+				</row>				
+			</rows>
+		</grid>
+	</task>
+</zk>

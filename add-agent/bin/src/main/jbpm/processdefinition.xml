@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.3"
+	name="Sol·licitud per a administrar un equip">
+	<description>
+		Formulari per sol·licitar accedir a una màquina com a administrador local
+	</description>
+
+
+	<start-state name="Inici">
+		<transition to="Sol.licitud per a administrar una màquina"></transition>
+	</start-state>
+
+
+	<task-node name="Sol.licitud per a administrar una màquina">
+		<task name="Sol·licitud per accedir a un host com administrador">
+			<description>
+				Ha de triar la màquina on es vol obtindre accés com a administrador
+			</description>
+			<assignment expression="previous"></assignment>
+		</task>
+		<transition to="Aprovació" name="Sol·licita"></transition>
+		<transition to="Cancel.lar" name="Cancel·la"></transition>
+	</task-node>
+
+	<node name="Notificar rebuig">
+		<action class="es.caib.seycon.bpm.acceshost.handler.EnviaCorreuHandler">
+			<aprobado>
+				false
+			</aprobado>
+		</action>
+		<transition to="Rebujat"></transition>
+	</node>
+
+	<task-node name="Aprovació">
+		<task name="Aprovació d'accés a host com a administrador">
+			<assignment pooled-actors="PC_ADMIN,SEU_WINDOWS"></assignment>
+		</task>
+		<transition to="Notificar acceptació" name="Accepta"></transition>
+		<transition to="Notificar rebuig" name="Rebutja"></transition>
+	</task-node>
+
+	<node name="Notificar acceptació">
+		<action class="es.caib.seycon.bpm.acceshost.handler.EnviaCorreuHandler">
+			<aprobado>
+				true
+			</aprobado>
+		</action>
+		<transition to="Aprovat"></transition>
+	</node>
+
+	<end-state name="Aprovat"></end-state>
+
+	<end-state name="Rebujat"></end-state>
+
+	<end-state name="Cancel.lar"></end-state>
+</process-definition>

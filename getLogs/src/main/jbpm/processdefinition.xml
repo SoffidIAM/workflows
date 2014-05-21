@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition 
+  xmlns="urn:jbpm.org:jpdl-3.1"
+  name="Get logs from server">
+
+	<start-state name="Start">
+		<transition to="Get logs"></transition>
+	</start-state>
+   <end-state name="Finished"></end-state>
+
+
+	<event type="task-create">
+		<script>
+				variables = taskInstance.getVariables();
+if (variables.get(&quot;usuari&quot;) != null) {
+  taskInstance.setName (
+    taskInstance.getName()+&quot; &quot;+usuari);
+}
+if (variables.get(&quot;nombres&quot;) != null ) {
+	taskInstance.setName (
+	  taskInstance.getName()+&quot; &quot;+
+	  variables.get(&quot;nombres&quot;));
+}
+if (variables.get(&quot;apellidos&quot;) != null ) {
+	taskInstance.setName (
+	  taskInstance.getName()+&quot; &quot;+
+	  variables.get(&quot;apellidos&quot;));
+}
+if (variables.get(&quot;apellidoSegundo&quot;) != null ) {
+	taskInstance.setName (
+	  taskInstance.getName()+&quot; &quot;+
+	  variables.get(&quot;apellidoSegundo&quot;));
+	}
+		</script>
+	</event>
+   <task-node name="Review log file">
+      <task name="Review log file">
+			<assignment expression="previous"></assignment>
+		</task>
+		<transition name="Repeat" to="Get logs"></transition>
+		<transition to="Finished" name="End"></transition>
+   </task-node>
+
+	<node name="Get logs">
+		<action name="Llegir logs" class="bpm.users.handler.ReadLogHandler"></action>
+		<transition to="Review log file"></transition>
+	</node>
+</process-definition>

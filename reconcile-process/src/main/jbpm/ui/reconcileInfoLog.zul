@@ -1,0 +1,169 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul
+		http://www.zkoss.org/2005/zul/zul.xsd">
+
+	<task id="window" width="${amplaria}">
+
+		<datamodel id="reconcile" rootNode="reconcileAccounts"
+			src="bpm/descReconcileUser.xml" />
+
+		<zscript>
+			<![CDATA[
+				import es.caib.zkib.datasource.XPathUtils;
+				
+				pageSize = 20;
+				
+				processId = new Long(window.getProcessInstance().getId());
+				reconcile.getVariables().declareVariable("processId", processId);
+				
+				// Load messages handler
+				com.soffid.iam.reconcile.bpm.ReconcileMessages msg =
+					new com.soffid.iam.reconcile.bpm.ReconcileMessages();
+				
+				// Define parameters on account row creation
+				void onNewAccountRow(data)
+				{
+					accountAction = data.getChildren().get(2);
+					accountUserType = data.getChildren().get(7);
+					accountType = data.getChildren().get(9);
+					
+					// Set literal to account proposed action
+					data.getChildren().get(3).setValue(com.soffid.iam.reconcile.Messages
+						.getString("ReconcileAccountProposedAction." +
+							accountAction.getValue()));
+					
+					// Set literal to shared account type
+					data.getChildren().get(10).setValue(org.zkoss.util.resource.Labels
+						.getLabel("accountType." + accountType.getValue()));
+					
+					// Check void user type
+					if (!data.getChildren().get(6).getValue().equals(""))
+					{
+						// Set literal to user type
+						ctx = XPathUtils.getComponentContext(data);
+						userType = XPathUtils.getValue(ctx, "userType");
+						es.caib.zkib.jxpath.JXPathContext xpath = reconcile.getJXPathContext();
+						xpath.getVariables().declareVariable("userType", userType);
+						String desc = reconcile.getJXPathContext()
+								.getValue("/userType[@codi=$userType]/@descripcio");
+						accountUserType.setValue (desc);
+					}
+				}
+				
+				// Define parameters on role row creation
+				void onNewRoleRow(data)
+				{
+					action = data.getChildren().get(2);
+					
+					data.getChildren().get(3).setValue(com.soffid.iam.reconcile.Messages
+						.getString("ReconcileProposedAction." + action.getValue()));
+				}
+				
+				// Define parameters on assignment row creation
+				void onNewAssignmentRow(data)
+				{
+					action = data.getChildren().get(2);
+					
+					data.getChildren().get(3).setValue(com.soffid.iam.reconcile.Messages
+						.getString("ReconcileProposedAction." + action.getValue()));
+				}
+			]]>
+		</zscript>
+
+		<navegador id="lista">
+			<tabbox id="panels">
+				<tabs>
+					<tab label="${msg['tabLabelAccounts']}" />
+					<tab label="${msg['tabLabelRoles']}" />
+					<tab label="${msg['tabLabelAssignment']}" />
+				</tabs>
+
+				<tabpanels>
+
+					<tabpanel id="accounts">
+						<grid id="gridAccounts" mold="paging" pageSize="${pageSize}"
+							dataPath="/window/reconcile:/account" fixedLayout="true"
+							height="96%" onNewRow="onNewAccountRow(event.data)">
+							
+							<columns>
+								<column label="${msg['columnHeaderAccName']}" />
+								<column label="${msg['columnHeaderDesc']}" />
+								<column label="${msg['columnPropAction']}" width="11%"
+									visible="false" />
+								<column label="${msg['columnPropAction']}" width="11%" />
+								<column label="${msg['columnUserName']}" />
+								<column label="${msg['columnGroup']}" />
+								<column label="${msg['columnType']}" width="11%"
+									visible="false" />
+								<column label="${msg['columnType']}" width="11%" />
+								<column label="${msg['columnActive']}" width="5%" />
+								<column label="${msg['columnAccType']}" width="12%"
+									visible="false" />
+								<column label="${msg['columnAccType']}" width="12%" />
+							</columns>
+							
+							<datarow>
+								<label id="accountName" bind="@accountName" />
+								<label id="accountDescription" bind="@description" />
+								<label id="accountAction" bind="@proposedAction"/>
+								<label id="accountActionLiteral"/>
+								<label id="userCode" bind="@userCode" />
+								<label id="primaryGroup" bind="@primaryGroup" />
+								<label id="lbuserType" bind="@userType" />
+								<label id="userTypeLiteral" />
+								<label id="active" bind="@active" />
+								<label id="accountType" bind="@accountType" />
+								<label id="accountTypeLiteral" />
+							</datarow>
+						</grid>
+					</tabpanel>
+
+					<tabpanel id="roles">
+						<grid id="gridRoles" mold="paging" pageSize="${pageSize}"
+							dataPath="/window/reconcile:/role" fixedLayout="true"
+							height="96%" onNewRow="onNewRoleRow(event.data)">
+							<columns>
+								<column label="${msg['columnHeaderRoleName']}" />
+								<column label="${msg['columnHeaderDesc']}" />
+								<column label="${msg['columnPropAction']}" visible="false" />
+								<column label="${msg['columnPropAction']}" />
+								<column label="${msg['columnApplication']}" />
+							</columns>
+
+							<datarow>
+								<label bind="@roleName" />
+								<label bind="@description" />
+								<label id="roleProposedAction" bind="@proposedAction" />
+								<label id="roleProposedActionLiteral"/>
+								<label id="roleApplication" bind="@appName" />
+							</datarow>
+						</grid>
+					</tabpanel>
+
+					<tabpanel id="assignment">
+						<grid id="gridAssignment" mold="paging" pageSize="${pageSize}"
+							dataPath="/window/reconcile:/assignment" fixedLayout="true"
+							height="96%" onNewRow="onNewAssignmentRow(event.data)">
+							<columns>
+								<column label="${msg['columnHeaderAccName']}" />
+								<column label="${msg['columnHeaderRoleName']}" />
+								<column label="${msg['columnPropAction']}" visible="false"/>
+								<column label="${msg['columnPropAction']}" />
+							</columns>
+
+							<datarow>
+								<label bind="@accountName" />
+								<label bind="@roleName" />
+								<label id="assignProposedAction" bind="@proposedAction" />
+								<label id="assignProposedActionLiteral"/>
+							</datarow>
+						</grid>
+					</tabpanel>
+				</tabpanels>
+			</tabbox>
+		</navegador>
+	</task>
+</zk>

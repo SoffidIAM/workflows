@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<root-container name="Reconcile process" width="828" height="537">
+  <node name="Start" x="21" y="17" width="132" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Enter reconcile parameters" x="297" y="14" width="240" height="36">
+    <edge>
+      <label x="-24" y="7"/>
+    </edge>
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Wait for scheduled time" x="298" y="109" width="239" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Create reconcile task" x="299" y="185" width="238" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Waiting for task completion" x="301" y="249" width="236" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Do reconcile" x="302" y="316" width="236" height="36">
+    <edge>
+      <label x="3" y="-115"/>
+      <bendpoint w1="326" h1="-4" w2="1" h2="303"/>
+    </edge>
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="Reconcile process summary" x="303" y="464" width="236" height="36">
+    <edge>
+      <label x="-15" y="-25"/>
+    </edge>
+  </node>
+  <node name="Reconcile data" x="356" y="394" width="132" height="36">
+    <edge>
+      <label x="5" y="-10"/>
+    </edge>
+  </node>
+  <node name="ReconcileFinished" x="671" y="465" width="132" height="36"/>
+  <node name="Cancelled" x="679" y="13" width="132" height="36"/>
+</root-container>
